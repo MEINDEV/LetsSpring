@@ -1,7 +1,7 @@
 # Learning Progress
 
 **Started:** 2026-10-07  **Target end:** 2027-04-07
-**Current:** Week 0, Setup  **Next step:** Finish Week 0 TASK: add greetAll + 2 tests, rename GreaterTest→GreeterTest, fix pom xmlns typo, commit. Then start Week 1.
+**Current:** Week 1, Modern Java  **Next step:** Generate weeks/week-01-modern-java, Lesson 1 (records + immutability). Warm-up Q: DRY / reusing greet() via method reference.
 
 ## Phase status
 | Phase | Weeks | Status | Checkpoint score |
@@ -14,18 +14,25 @@
 ## Weekly log
 | Week | Topic | Lessons done | Task score | Date completed | Notes |
 |---|---|---|---|---|---|
-| 0 | Setup | 1/1 | ungraded | – | Lesson done, 3/3 check Qs correct. greetAll part of task still missing. |
+| 0 | Setup | 1/1 | ungraded (would be ~80) | 2026-10-08 | 3/3 check Qs. 4 tests pass. greetAll via streams. Feedback: duplicated greet logic, no empty-list test, `;;`, test naming. |
+| 1 | Modern Java | 0/3 | – | – | |
 
 ## Weak areas (revisit in warm-ups)
 - Reading the full task requirements before submitting (Week 0: skipped greetAll)
-- Attention to small typos (test class name, pom xmlns)
+- Attention to small typos (test class name, pom xmlns, `;;`)
+- DRY: duplicated greet() logic inside greetAll instead of reusing it
+- Test naming: names should describe behaviour (e.g. greetsBlankNamesAsWorld)
+- Code formatting (spaces around operators / before `{`), so encourage Shift+Alt+F
 
 ## Strong areas
 - Maven basics: understands compile/package and test scope
 - Git: conventional commit message used correctly on first try
+- Responds well to feedback: fixed all 4 review items in one pass
+- Already comfortable with basic streams (map + Collectors.joining) and ternary
 
 ## Session history
 - 2026-10-07: Platform created. Learner profile: OOP basics, ~10 h/week, Java 21 + Maven, VS Code. JDK and Maven not yet installed.
 - 2026-10-07: Installed Temurin JDK 21.0.12 (winget), Maven 3.9.16 (C:\Users\sundramkr\tools, on user PATH), VS Code Java + Spring Boot extension packs. Verified java/javac/mvn.
 - 2026-10-07: Git email + default branch set; C:\SpringBoot git-initialized with .gitignore. Week 0 LESSON.md and TASK.md written. git user.name still unset.
 - 2026-10-08: Week 0 review. Learner set git name (Sundram Sontirkey), used package com.meindev (accepted). mvn test passes 2/2. Missing: greetAll + its tests. Feedback given on test class typo, pom xmlns typo, whitespace edge case.
+- 2026-10-08: Week 0 resubmitted: all fixes done, greetAll with streams, 4/4 tests pass, committed 201bf08. Week 0 COMPLETE.

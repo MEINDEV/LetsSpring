@@ -21,12 +21,12 @@ public class GreeterTest {
     @Test 
     void allNamesAreValid(){
         String[] names = {"Sundram","alice","bob","charlie"};
-        assertEquals("Hello, Sundram!\nHello, alice!\nHello, bob!\nHello, charlie!", greeter.greetAll(Arrays.asList(names)));;
+        assertEquals("Hello, Sundram!\nHello, alice!\nHello, bob!\nHello, charlie!", greeter.greetAll(Arrays.asList(names)));
     }
 
     @Test 
     void fewNamesAreValid(){
         String[] names = {"Sundram","","bob"," "};
-        assertEquals("Hello, Sundram!\nHello, World!\nHello, bob!\nHello, World!", greeter.greetAll(Arrays.asList(names)));;
+        assertEquals("Hello, Sundram!\nHello, World!\nHello, bob!\nHello, World!", greeter.greetAll(Arrays.asList(names)));
     }
 }
