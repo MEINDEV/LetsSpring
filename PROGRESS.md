@@ -1,7 +1,7 @@
 # Learning Progress
 
 **Started:** 2026-10-07  **Target end:** 2027-04-07
-**Current:** Week 1, Modern Java  **Next step:** Generate weeks/week-01-modern-java, Lesson 1 (records + immutability). Warm-up Q: DRY / reusing greet() via method reference.
+**Current:** Week 1, Modern Java  **Next step:** Learner does Week 1 Lesson 1 (LESSON.md) + EXERCISES.md E1.1–E1.4, answers 3 check Qs. Then Lesson 2 (enums, switch expressions, pattern matching).
 
 ## Phase status
 | Phase | Weeks | Status | Checkpoint score |
@@ -36,3 +36,4 @@
 - 2026-10-07: Git email + default branch set; C:\SpringBoot git-initialized with .gitignore. Week 0 LESSON.md and TASK.md written. git user.name still unset.
 - 2026-10-08: Week 0 review. Learner set git name (Sundram Sontirkey), used package com.meindev (accepted). mvn test passes 2/2. Missing: greetAll + its tests. Feedback given on test class typo, pom xmlns typo, whitespace edge case.
 - 2026-10-08: Week 0 resubmitted: all fixes done, greetAll with streams, 4/4 tests pass, committed 201bf08. Week 0 COMPLETE.
+- 2026-10-08: DRY challenge solved correctly (`.map(this::greet)`); note: should be `refactor:` not `feat:`. Generated Week 1 project (pom with JUnit+AssertJ), LESSON.md Lesson 1 (immutability, equals/hashCode, records), EXERCISES.md Lesson 1. Examples verified to compile/run.
