@@ -38,7 +38,6 @@ public class MutablePointBug {
         System.out.println(visited.contains(p));
 
         p.setX(5);
-
         System.out.println(visited.contains(p));
 
         System.out.println(visited.size());

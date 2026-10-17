@@ -12,7 +12,7 @@
 | Week | Topic | Weekly task (graded) |
 |---|---|---|
 | 0 | **Setup**: JDK 21, Maven, VS Code Java pack, Git basics, first Maven project | Hello Maven + first Git commit |
-| 1 | Modern Java: `var`, records, enums, switch expressions, text blocks, String vs StringBuilder, `equals`/`hashCode`, immutability | Immutable `Money` and `BankAccount` model |
+| 1 | Modern Java: `var`, records, enums, switch expressions, text blocks, String vs StringBuilder, `equals`/`hashCode`, immutability | Immutable `IndianRupee` and `BankAccount` model |
 | 2 | OOP design: SOLID, composition over inheritance, interfaces (default/static/sealed), abstract classes; exceptions (checked vs unchecked, custom, try-with-resources) | Payment processing module with sealed types and custom exceptions |
 | 3 | Generics (bounded types, wildcards, PECS) and the Collections framework (List/Set/Map/Queue implementations, Big-O, Comparable/Comparator) | Generic in-memory `Repository<T, ID>` and an LRU cache |
 | 4 | Functional Java: lambdas, functional interfaces, method references, Streams API, Collectors (groupingBy, partitioningBy), Optional | Sales report engine over a CSV dataset |

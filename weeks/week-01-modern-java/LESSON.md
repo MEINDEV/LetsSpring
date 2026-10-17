@@ -5,7 +5,7 @@
 | **1** | **Immutability, `equals`/`hashCode`, records** | ← you are here |
 | 2 | Enums, switch expressions, pattern matching | later |
 | 3 | `var`, text blocks, String vs StringBuilder, BigDecimal for money | later |
-| Task | Immutable `Money` and `BankAccount` (graded) | after lesson 3 |
+| Task | Immutable `IndianRupee` and `BankAccount` (graded) | after lesson 3 |
 
 Project: `weeks/week-01-modern-java` (the `pom.xml` is ready, with JUnit 5 + **AssertJ**).
 Type the examples into `src/main/java/com/meindev/examples/`.
@@ -176,29 +176,29 @@ That's about 45 lines for 2 fields. Most of it is *boilerplate* (repetitive code
 
 ## 5. Example 4: records (Java 16+) do the same thing in a few lines
 ```java
-public record Money(long amountInPaise, String currency) { }
+public record IndianRupee(long amountInPaise, String currency) { }
 ```
 That single line automatically gives you:
 | Generated | Notes |
 |---|---|
 | `private final` fields | immutable by default |
-| Canonical constructor `Money(long, String)` | |
+| Canonical constructor `IndianRupee(long, String)` | |
 | Accessors `amountInPaise()`, `currency()` | **No `get` prefix!** |
 | `equals`, `hashCode`, `toString` | correct, based on all components |
 
 A record is a **final** class, and it **cannot extend** another class (it *can* implement interfaces).
 
-Now let's make it production-quality. Create `examples/Money.java`:
+Now let's make it production-quality. Create `examples/IndianRupee.java`:
 ```java
 package com.meindev.examples;
 
 import java.util.Objects;
 
-public record Money(long amountInPaise, String currency) {
+public record IndianRupee(long amountInPaise, String currency) {
 
     // COMPACT constructor: no parameter list, it runs BEFORE fields are assigned.
     // Use it for validation and normalization.
-    public Money {
+    public IndianRupee {
         if (amountInPaise < 0) {
             throw new IllegalArgumentException("amount must be >= 0, got " + amountInPaise);
         }
@@ -207,21 +207,21 @@ public record Money(long amountInPaise, String currency) {
     }
 
     // Static factory: a readable name instead of "new"
-    public static Money inr(long rupees) {
-        return new Money(rupees * 100, "INR");
+    public static IndianRupee inr(long rupees) {
+        return new IndianRupee(rupees * 100, "INR");
     }
 
-    public Money plus(Money other) {
+    public IndianRupee plus(IndianRupee other) {
         requireSameCurrency(other);
-        return new Money(amountInPaise + other.amountInPaise, currency);
+        return new IndianRupee(amountInPaise + other.amountInPaise, currency);
     }
 
-    public boolean isGreaterThan(Money other) {
+    public boolean isGreaterThan(IndianRupee other) {
         requireSameCurrency(other);
         return amountInPaise > other.amountInPaise;
     }
 
-    private void requireSameCurrency(Money other) {
+    private void requireSameCurrency(IndianRupee other) {
         if (!currency.equals(other.currency)) {
             throw new IllegalArgumentException(currency + " vs " + other.currency);
         }
@@ -230,11 +230,11 @@ public record Money(long amountInPaise, String currency) {
 ```
 Try it in a `main` method or a quick test:
 ```java
-Money a = Money.inr(100);
-Money b = new Money(10000, " inr ");
-System.out.println(a);              // Money[amountInPaise=10000, currency=INR]
+IndianRupee a = IndianRupee.inr(100);
+IndianRupee b = new IndianRupee(10000, " inr ");
+System.out.println(a);              // IndianRupee[amountInPaise=10000, currency=INR]
 System.out.println(a.equals(b));    // true: compared by VALUE, not by memory
-System.out.println(a.plus(b));      // a new Money object; a and b are unchanged
+System.out.println(a.plus(b));      // a new IndianRupee object; a and b are unchanged
 ```
 > 💡 We store money as `long` paise here to avoid floating-point errors. **Never use `double` for money.**
 > In Lesson 3 you'll learn `BigDecimal`, the industry standard.
@@ -271,7 +271,7 @@ With `List.copyOf`, the first line no longer affects the team, and the second th
 | ✅ Use records for | ❌ Don't use records for |
 |---|---|
 | DTOs (request and response bodies in REST APIs, Week 10) | JPA entities (they need mutability and a no-arg constructor, Week 12) |
-| Value objects: `Money`, `Email`, `Address` | Classes that need to extend another class |
+| Value objects: `IndianRupee`, `Email`, `Address` | Classes that need to extend another class |
 | Events and messages (Kafka, Week 22) | Objects whose state must change over time (for example a `BankAccount` balance) |
 | Map keys, configuration (`@ConfigurationProperties`) | |
 
