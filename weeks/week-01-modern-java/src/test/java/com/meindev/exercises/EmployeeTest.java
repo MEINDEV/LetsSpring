@@ -11,6 +11,6 @@ public class EmployeeTest{
     public void hasBugTest(){
         Map<Employee, String> roles = new HashMap<>();
         roles.put(new Employee("E1"), "Developer");
-        assertThat("Developer").isEqualTo(roles.get(new Employee("E1")));
+        assertThat(roles.get(new Employee("E1")).isEqualTo("Developer"));
     }
 }

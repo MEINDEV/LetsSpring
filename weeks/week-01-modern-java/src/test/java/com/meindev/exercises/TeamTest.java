@@ -55,7 +55,7 @@ public class TeamTest{
 
     @Test
     public void addNewMember(){
-        List teamMembers = List.of("abc","bcd");
+        List<String> teamMembers = List.of("abc","bcd");
         Team dev = new Team("Dev",teamMembers);
 
         Team teamWithNewMember = dev.withMember("xyz");

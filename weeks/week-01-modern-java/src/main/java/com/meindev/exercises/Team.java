@@ -19,7 +19,7 @@ public record Team(
     }
 
     Team withMember(String newMember){
-        List mutableList = new ArrayList<>(members);
+        List<String> mutableList = new ArrayList<>(members);
         mutableList.add(newMember);
         Team newTeam = new Team(name,List.copyOf(mutableList));
 
