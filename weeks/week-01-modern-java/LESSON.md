@@ -2,8 +2,8 @@
 
 | Lesson | Topic | Status |
 |---|---|---|
-| **1** | **Immutability, `equals`/`hashCode`, records** | ← you are here |
-| 2 | Enums, switch expressions, pattern matching | later |
+| 1 | Immutability, `equals`/`hashCode`, records | ✅ done |
+| **2** | **Enums, switch expressions, pattern matching** | ← you are here |
 | 3 | `var`, text blocks, String vs StringBuilder, BigDecimal for money | later |
 | Task | Immutable `IndianRupee` and `BankAccount` (graded) | after lesson 3 |
 
@@ -292,3 +292,270 @@ With `List.copyOf`, the first line no longer affects the team, and the second th
 3. What is the difference between a *compact constructor* and a normal constructor in a record?
 
 Then do [EXERCISES.md](EXERCISES.md).
+
+---
+---
+
+# Lesson 2: Enums, Switch Expressions, Pattern Matching
+
+## 1. Enums: a fixed set of named values
+
+### The problem enums solve
+```java
+// ❌ Old style: "magic" constants
+static final int STATUS_CREATED = 0;
+static final int STATUS_PAID = 1;
+void ship(int status) { ... }
+ship(42);        // compiles! but 42 means nothing
+```
+An **enum** is a type with a **fixed list of instances**, all known at compile time:
+```java
+public enum OrderStatus { CREATED, PAID, SHIPPED, DELIVERED, CANCELLED }
+
+void ship(OrderStatus status) { ... }
+ship(42);        // ❌ compile error, which is exactly what we want
+```
+Enums are **type-safe**, **immutable singletons** (exactly one `PAID` object exists), and they work with `==`.
+
+### Built-in methods
+| Method | Example | Result |
+|---|---|---|
+| `values()` | `OrderStatus.values()` | array of all constants, in declared order |
+| `valueOf(String)` | `OrderStatus.valueOf("PAID")` | `PAID`, or throws `IllegalArgumentException` for an unknown name |
+| `name()` | `PAID.name()` | `"PAID"` |
+| `ordinal()` | `PAID.ordinal()` | `1` (its position) ⚠️ see the mistakes table |
+
+---
+
+## 2. Example 1: enums with fields, a constructor and methods
+Enums are full classes. Create `examples/Plan.java`:
+```java
+package com.meindev.examples;
+
+import java.util.Arrays;
+
+public enum Plan {
+    FREE("free", 0, 1),
+    PRO("pro", 49_900, 10),          // _ in numbers is just for readability: 49900 paise = ₹499
+    ENTERPRISE("enterprise", 199_900, 1_000);
+
+    private final String code;
+    private final long monthlyPricePaise;
+    private final int maxUsers;
+
+    // An enum constructor is always private; you can't call "new Plan(...)"
+    Plan(String code, long monthlyPricePaise, int maxUsers) {
+        this.code = code;
+        this.monthlyPricePaise = monthlyPricePaise;
+        this.maxUsers = maxUsers;
+    }
+
+    public long monthlyPricePaise() { return monthlyPricePaise; }
+    public int maxUsers() { return maxUsers; }
+
+    public boolean allows(int users) {
+        return users <= maxUsers;
+    }
+
+    // Lookup by an external code (for example from an API request).
+    // Industry practice: don't expose valueOf("PRO") to users, because names are internal.
+    public static Plan fromCode(String code) {
+        return Arrays.stream(values())
+                .filter(plan -> plan.code.equalsIgnoreCase(code))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown plan: " + code));
+    }
+}
+```
+```java
+Plan plan = Plan.fromCode("Pro");
+System.out.println(plan);                   // PRO
+System.out.println(plan.allows(25));        // false
+System.out.println(plan == Plan.PRO);       // true: == is safe for enums
+```
+
+### EnumSet and EnumMap
+Special, very fast collections for enum keys:
+```java
+Set<Plan> paidPlans = EnumSet.of(Plan.PRO, Plan.ENTERPRISE);
+Map<Plan, Integer> subscribers = new EnumMap<>(Plan.class);
+subscribers.put(Plan.PRO, 120);
+```
+
+---
+
+## 3. Switch expressions (Java 14+)
+
+### The old switch *statement*, and its trap
+```java
+String label;
+switch (status) {
+    case CREATED:
+        label = "New";
+        break;
+    case PAID:
+        label = "Paid";            // ⚠️ forgot break: "falls through" to the next case!
+    case SHIPPED:
+        label = "On the way";
+        break;
+    default:
+        label = "Other";
+}
+```
+
+### The modern switch *expression*
+```java
+String label = switch (status) {
+    case CREATED -> "New";
+    case PAID -> "Paid";
+    case SHIPPED, DELIVERED -> "On the way / done";     // several labels on one line
+    case CANCELLED -> {
+        System.out.println("cancelled order seen");
+        yield "Cancelled";                              // "yield" returns a value from a block
+    }
+};
+```
+| Feature | Why it matters |
+|---|---|
+| `->` arrow | **No fall-through**, and no `break` needed |
+| It's an **expression** | It produces a value, so you can assign it or `return` it directly |
+| **Exhaustive** | For an enum, if you miss a constant the code **does not compile** |
+
+> 🎯 **Industry tip:** for enums, **don't add `default`**. Then if someone adds a new constant
+> (`REFUNDED`) next year, the compiler shows you **every switch that must handle it**.
+> With `default`, the new value silently goes into "Other", which is a hidden bug.
+
+---
+
+## 4. Example 2: a real-world state machine
+Order status rules are a common interview and production problem. Create `examples/OrderStatus.java`:
+```java
+package com.meindev.examples;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+public enum OrderStatus {
+    CREATED, PAID, SHIPPED, DELIVERED, CANCELLED;
+
+    public Set<OrderStatus> allowedNext() {
+        return switch (this) {
+            case CREATED -> EnumSet.of(PAID, CANCELLED);
+            case PAID -> EnumSet.of(SHIPPED, CANCELLED);
+            case SHIPPED -> EnumSet.of(DELIVERED);
+            case DELIVERED, CANCELLED -> EnumSet.noneOf(OrderStatus.class);   // final states
+        };
+    }
+
+    public boolean canMoveTo(OrderStatus next) {
+        return allowedNext().contains(next);
+    }
+
+    public boolean isFinal() {
+        return allowedNext().isEmpty();
+    }
+}
+```
+```java
+System.out.println(OrderStatus.CREATED.canMoveTo(OrderStatus.PAID));       // true
+System.out.println(OrderStatus.SHIPPED.canMoveTo(OrderStatus.CANCELLED));  // false
+System.out.println(OrderStatus.DELIVERED.isFinal());                        // true
+```
+
+---
+
+## 5. Pattern matching (Java 16–21)
+
+### 5a. `instanceof` pattern (you've already used it in `equals`)
+```java
+// Old
+if (obj instanceof String) {
+    String s = (String) obj;          // manual cast
+    System.out.println(s.length());
+}
+// New: test and cast in one step
+if (obj instanceof String s) {
+    System.out.println(s.length());
+}
+```
+
+### 5b. Switch on **types** (Java 21)
+```java
+static String describe(Object obj) {
+    return switch (obj) {
+        case null -> "null value";                         // handle null explicitly
+        case Integer i when i < 0 -> "negative int " + i;  // "when" = an extra condition (a guard)
+        case Integer i -> "int " + i;
+        case String s -> "text of length " + s.length();
+        default -> "something else";
+    };
+}
+```
+> Order matters: put the **more specific** case (`Integer i when i < 0`) **before** the general one.
+
+### 5c. Record patterns: take a record apart inside the `case`
+```java
+record Point(int x, int y) { }
+
+static String where(Object obj) {
+    return switch (obj) {
+        case Point(int x, int y) when x == 0 && y == 0 -> "origin";
+        case Point(int x, int y) -> "point at " + x + "," + y;   // x and y extracted directly
+        default -> "not a point";
+    };
+}
+```
+
+---
+
+## 6. Example 3: sealed types + records + switch = a powerful combination
+A **sealed** interface lists *exactly* which types may implement it. You'll study `sealed` in depth
+in Week 2. For now: because the compiler knows **all** the subtypes, a switch over them can be
+exhaustive with **no `default`**, just like with enums.
+
+Create `examples/Payment.java`:
+```java
+package com.meindev.examples;
+
+public sealed interface Payment permits Payment.Card, Payment.Upi, Payment.Cash {
+
+    record Card(String last4Digits, long amountPaise) implements Payment { }
+    record Upi(String upiId, long amountPaise) implements Payment { }
+    record Cash(long amountPaise) implements Payment { }
+
+    // Fee rules: card 2%, UPI free up to ₹2000 then 0.5%, cash free
+    static long feePaise(Payment payment) {
+        return switch (payment) {
+            case Card(String last4, long amount) -> amount * 2 / 100;
+            case Upi(String id, long amount) when amount <= 200_000 -> 0;
+            case Upi(String id, long amount) -> amount * 5 / 1000;
+            case Cash cash -> 0;
+        };   // no default: add a new Payment type and this stops compiling until you handle it
+    }
+}
+```
+```java
+System.out.println(Payment.feePaise(new Payment.Card("4242", 100_000)));     // 2000 (₹20)
+System.out.println(Payment.feePaise(new Payment.Upi("asha@upi", 150_000)));  // 0
+System.out.println(Payment.feePaise(new Payment.Upi("asha@upi", 400_000)));  // 2000
+```
+This style (data in records, behaviour in an exhaustive switch) is called **data-oriented programming**.
+It's increasingly common in modern Java codebases.
+
+---
+
+## 7. Common mistakes
+| Mistake | Why it's bad | Fix |
+|---|---|---|
+| Storing `ordinal()` in a database | Re-ordering the constants silently corrupts the data | Store `name()` (JPA: `@Enumerated(EnumType.STRING)`, Week 12) |
+| `valueOf(userInput)` with no handling | Throws on unknown input, and exposes internal names | A custom `fromCode()` with a clear error |
+| `default` in an enum switch | Hides newly added constants | Leave it out and let the compiler check exhaustiveness |
+| General case before a specific one | `case Integer i` before `case Integer i when i < 0` doesn't compile (the second can never match) | Specific first |
+| Using `switch` on Strings for statuses | Typos compile fine | Use an enum |
+
+## 8. Quick check questions (answer in chat)
+1. Why is it a bad idea to store `ordinal()` in a database?
+2. You add `REFUNDED` to `OrderStatus`. What happens to the `allowedNext()` switch, and why is that **good**?
+3. In Example 3, what does `when` do, and why must `Upi(...) when amount <= 200_000` come **before** the plain `Upi(...)` case?
+
+Then do **Lesson 2** in [EXERCISES.md](EXERCISES.md).

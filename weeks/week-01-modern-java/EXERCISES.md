@@ -60,3 +60,60 @@ System.out.println(s);
 ---
 When you're done: run `mvn test`, commit (`feat(week-01): lesson 1 exercises`), and say **"exercises done"**
 together with your answers to the lesson's check questions and E1.4.
+
+---
+---
+
+## Lesson 2: Enums, switch, pattern matching (about 1.5 h)
+
+Same folders as before (`exercises/`). **Rules for this set:**
+- Make every test **fail first** (red), then make it pass (green). Use `List<String>`, never a raw `List`.
+- Test method names describe behaviour: `cannotShipCancelledOrder()`, not `test1()`.
+
+### E2.1 `Size` enum with fields (15 min)
+Coffee sizes: `SMALL("S", 250)`, `MEDIUM("M", 350)`, `LARGE("L", 500)`, where the numbers are millilitres.
+- Accessor `int ml()`.
+- `static Size fromCode(String code)`: case-insensitive (`"m"` and `"M"` both give `MEDIUM`). Unknown or null input
+  throws `IllegalArgumentException` with a message containing the bad code.
+- `Size next()`: the next bigger size. `LARGE.next()` returns `LARGE` (it doesn't grow forever).
+  Use a **switch expression** with no `default`.
+- **Tests:** at least 4, including lowercase input, unknown code, null code, and `LARGE.next()`.
+
+### E2.2 `TicketStatus` state machine (25 min)
+A support-ticket lifecycle: `OPEN → IN_PROGRESS → RESOLVED → CLOSED`.
+- `OPEN` can also go straight to `CLOSED` (a duplicate ticket).
+- `RESOLVED` can go back to `IN_PROGRESS` (the customer says "still broken").
+- `CLOSED` is final.
+- Methods: `boolean canMoveTo(TicketStatus next)`, `boolean isFinal()`.
+- **Tests:** every allowed move returns `true`, at least 3 forbidden moves return `false`, and `CLOSED.isFinal()`.
+  > Bonus: test all allowed moves in one test using a `@ParameterizedTest` with `@CsvSource`.
+  > Look it up in the JUnit 5 docs. Learning from documentation is a core skill.
+
+### E2.3 Notification sender (30 min)
+```java
+public sealed interface Notification permits Email, Sms, Push { }
+public record Email(String to, String subject) implements Notification { }
+public record Sms(String phone, String text) implements Notification { }
+public record Push(String deviceId, String title) implements Notification { }
+```
+(Put each type in its own file, or nest them like `Payment` in the lesson. Your choice.)
+
+Write `static String describe(Notification n)` using a **switch with record patterns**, with no `default`:
+| Input | Output |
+|---|---|
+| `Email("a@x.com", "Hi")` | `Email to a@x.com: Hi` |
+| `Sms` with text of 160 characters or fewer | `SMS to +91999: <text>` |
+| `Sms` with text longer than 160 characters | `Long SMS (2 parts) to +91999`. Parts = text length ÷ 160, rounded **up** |
+| `Push("dev-1", "Sale!")` | `Push to dev-1: Sale!` |
+
+- **Tests:** one per row, plus the boundary: exactly 160 characters is still a normal SMS, and 161 is 2 parts.
+  > Tip: `"a".repeat(161)` builds a 161-character string.
+- Hint on rounding up with integers: what is `(161 + 159) / 160`?
+
+### E2.4 Think (answer in chat, no code)
+In E2.1, if you had written `default -> LARGE` in `next()`, and someone later adds `EXTRA_LARGE`, what
+bug would appear? Would the compiler warn you?
+
+---
+When you're done: run `mvn test` (no warnings!), commit (`feat(week-01): lesson 2 exercises`), and say
+**"exercises done"** with your answers to the Lesson 2 check questions and E2.4.
