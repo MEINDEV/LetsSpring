@@ -1,4 +1,6 @@
+package com.meindev.examples;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -10,6 +12,10 @@ public class EqualsOnlyBug {
 
         public boolean equals(Object o){
             return o instanceof Email other && value.equals(other.value);
+        }
+
+        public int hashCode(){
+            return Objects.hash(value);
         }
     }
 

@@ -1,20 +1,20 @@
 package com.meindev.exercises;
 
 public record Temperature(
-         double celcius
+         double celsius
 ) {
-    public Temperature(double celcius){
-        if (celcius <  -273.15){
+    public Temperature(double celsius){
+        if (celsius <=  -273.15){
             throw new IllegalArgumentException("absolute zero");
         }
-        this.celcius = celcius;
+        this.celsius = celsius;
     }
 
     double fahrenheit(){
-        return celcius * 9/5 + 32;
+        return celsius * 9/5 + 32;
     }
 
-    Temperature ofFahrenheit(double f){
+    static Temperature ofFahrenheit(double f){
         double cel = (f - 32)*5/9;
         return new Temperature(cel);
     }
