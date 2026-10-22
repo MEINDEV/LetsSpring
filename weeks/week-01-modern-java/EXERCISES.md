@@ -117,3 +117,67 @@ bug would appear? Would the compiler warn you?
 ---
 When you're done: run `mvn test` (no warnings!), commit (`feat(week-01): lesson 2 exercises`), and say
 **"exercises done"** with your answers to the Lesson 2 check questions and E2.4.
+
+---
+---
+
+## Lesson 3: var, text blocks, Strings, BigDecimal (about 1.5 h)
+
+### E3.1 Learning tests for BigDecimal traps (15 min)
+A **learning test** is a test you write to *prove to yourself* how a library behaves. Real teams do this
+before relying on unfamiliar APIs. Create `BigDecimalLearningTest` with one test per fact:
+1. `0.1 + 0.2` in `double` is **not** `0.3`.
+2. `new BigDecimal(0.1)` is **not** equal to `new BigDecimal("0.1")`.
+3. `2.0` and `2.00` are **not** `equals`, but `compareTo` returns `0`.
+   (AssertJ also has `isEqualByComparingTo(...)`. Try it!)
+4. `10 / 3` without a rounding mode throws `ArithmeticException`.
+5. `add()` does **not** change the original object.
+
+### E3.2 Fix the legacy code (15 min)
+Copy this into `exercises/TagFormatter.java`. It has **2 bugs and 1 performance problem**:
+```java
+public class TagFormatter {
+    public static String format(List<String> tags, String mode) {
+        String result = "";
+        for (String tag : tags) {
+            if (mode == "UPPER") {
+                result += tag.toUpperCase() + ", ";
+            } else {
+                result += tag + ", ";
+            }
+        }
+        return result;
+    }
+}
+```
+Expected: `format(List.of("java", "spring"), "UPPER")` gives `"JAVA, SPRING"` (no trailing comma).
+1. First write tests that **fail** and show the bugs. Tip: pass `new String("UPPER")` as the mode.
+2. Then fix it. Bonus: make `mode` an **enum** (`TagCase.UPPER`, `TagCase.AS_IS`) instead of a String.
+
+### E3.3 Bill splitter (30 min)
+`static List<BigDecimal> split(BigDecimal total, int people)` in `exercises/BillSplitter.java`:
+- Every part has scale 2, and **the parts must add up to exactly `total`**.
+- `split(100.00, 3)` gives `[33.34, 33.33, 33.33]`. The extra paisa goes to the first people.
+- `split(10.00, 4)` gives `[2.50, 2.50, 2.50, 2.50]`.
+- `people <= 0` throws `IllegalArgumentException`. A negative total also throws.
+- **Tests:** both examples above, a sum check (add the parts back together and compare with `compareTo`), and both error cases.
+> Hint: work in **paise** (`total.movePointRight(2)`), use integer division `/` and remainder `%`, then convert back.
+
+### E3.4 Order confirmation email with a text block (20 min)
+`static String confirmationEmail(String customer, String orderId, BigDecimal amount)` should return exactly:
+```
+Hi Asha,
+
+Your order ORD-42 is confirmed.
+Amount paid: ₹1,179.99
+
+Thanks for shopping with us!
+```
+- Build it with a **text block** and `.formatted(...)`.
+- Thousand separators: look up `String.format("%,.2f", amount)`, which works with BigDecimal.
+- **Test** using an expected text block. (Notice: does your expected value end with a `\n` or not?)
+
+---
+When you're done: run `mvn test` (no warnings), commit (`feat(week-01): lesson 3 exercises`), and say
+**"exercises done"** with your answers to the Lesson 3 check questions.
+Next comes the **graded weekly task** 🎯.

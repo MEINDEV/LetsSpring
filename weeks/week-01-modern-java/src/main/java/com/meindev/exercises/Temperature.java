@@ -4,7 +4,7 @@ public record Temperature(
          double celsius
 ) {
     public Temperature(double celsius){
-        if (celsius <=  -273.15){
+        if (celsius <  -273.15){
             throw new IllegalArgumentException("absolute zero");
         }
         this.celsius = celsius;

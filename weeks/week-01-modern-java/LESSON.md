@@ -3,8 +3,8 @@
 | Lesson | Topic | Status |
 |---|---|---|
 | 1 | Immutability, `equals`/`hashCode`, records | ✅ done |
-| **2** | **Enums, switch expressions, pattern matching** | ← you are here |
-| 3 | `var`, text blocks, String vs StringBuilder, BigDecimal for money | later |
+| 2 | Enums, switch expressions, pattern matching | ✅ done |
+| **3** | **`var`, text blocks, String vs StringBuilder, BigDecimal for money** | ← you are here |
 | Task | Immutable `IndianRupee` and `BankAccount` (graded) | after lesson 3 |
 
 Project: `weeks/week-01-modern-java` (the `pom.xml` is ready, with JUnit 5 + **AssertJ**).
@@ -559,3 +559,243 @@ It's increasingly common in modern Java codebases.
 3. In Example 3, what does `when` do, and why must `Upi(...) when amount <= 200_000` come **before** the plain `Upi(...)` case?
 
 Then do **Lesson 2** in [EXERCISES.md](EXERCISES.md).
+
+---
+---
+
+# Lesson 3: `var`, Text Blocks, Strings, and BigDecimal for Money
+
+## 1. `var`: local variable type inference (Java 10+)
+The compiler works out the type from the right-hand side. **It is still static typing**, so the type is fixed at compile time.
+```java
+var names = new ArrayList<String>();          // ArrayList<String>
+var count = 10;                               // int
+var plan = Plan.fromCode("pro");              // Plan
+```
+| ✅ Allowed | ❌ Not allowed |
+|---|---|
+| Local variables inside methods | Fields, method parameters, return types |
+| `for (var item : items)` | `var x;` with no value (nothing to infer from) |
+| | `var x = null;` |
+
+**When to use it (industry guideline):** use `var` when the type is **obvious** from the right side.
+```java
+var customer = new Customer("Asha");           // ✅ obvious
+var result = processor.process(order);         // ❌ what type is result? The reader has to guess
+var list = new ArrayList<>();                  // ⚠️ trap: this is ArrayList<Object>!
+```
+
+---
+
+## 2. Text blocks (Java 15+)
+Multi-line strings without `\n` and `+`. They are very common for **SQL, JSON and test data**.
+```java
+// Old
+String json = "{\n" +
+              "  \"name\": \"Asha\",\n" +
+              "  \"plan\": \"PRO\"\n" +
+              "}";
+
+// New
+String json = """
+        {
+          "name": "Asha",
+          "plan": "PRO"
+        }
+        """;
+```
+Rules:
+- The content starts on the line **after** the opening `"""`.
+- Common leading spaces are removed. The position of the **closing `"""`** decides the left margin.
+- A closing `"""` on its own line adds a final `\n`. Put it at the end of the last line to avoid that.
+- Fill in values with `.formatted(...)`:
+```java
+String sql = """
+        SELECT id, name
+        FROM customers
+        WHERE plan = '%s' AND active = %b
+        """.formatted("PRO", true);
+```
+> ⚠️ Never build SQL from **user input** this way: that's how *SQL injection* happens. In Week 11 you'll use
+> parameterized queries. `formatted` is fine for log messages, test data and fixed text.
+
+---
+
+## 3. Strings: the 3 things every backend developer must know
+
+### 3a. `==` compares references; `equals` compares content
+```java
+String a = "java";
+String b = "java";
+String c = new String("java");
+String d = "ja" + "va".strip();     // computed at runtime
+
+System.out.println(a == b);         // true  (both point to the same pooled literal)
+System.out.println(a == c);         // false (c is a new object)
+System.out.println(a == d);         // false
+System.out.println(a.equals(d));    // true  ✅ always use equals for content
+```
+`a == b` working "sometimes" is exactly what makes this bug dangerous: it passes small tests and fails in production.
+
+### 3b. Concatenating in a loop is slow; use `StringBuilder`
+`String` is immutable, so every `+=` in a loop **copies the whole string** into a new object.
+```java
+// ❌ O(n²): for 100,000 items this is very slow
+String csv = "";
+for (String name : names) {
+    csv += name + ",";
+}
+
+// ✅ O(n): StringBuilder is a MUTABLE buffer
+var sb = new StringBuilder();
+for (String name : names) {
+    if (!sb.isEmpty()) sb.append(',');
+    sb.append(name);
+}
+String csv = sb.toString();
+
+// ✅✅ The simplest, if you just need to join:
+String csv = String.join(",", names);
+// or with streams: names.stream().collect(Collectors.joining(","))
+```
+> `"Hello, " + name + "!"` in a **single expression** is fine, because the compiler optimizes it. The problem is only `+=` **inside loops**.
+
+### 3c. Useful String methods (Java 11+)
+| Method | Example | Result |
+|---|---|---|
+| `isBlank()` | `"  ".isBlank()` | `true` |
+| `strip()` | `"  hi ".strip()` | `"hi"` (Unicode-aware `trim`) |
+| `repeat(n)` | `"-".repeat(5)` | `"-----"` |
+| `lines()` | `"a\nb".lines().count()` | `2` |
+| `formatted(...)` | `"%s has %d".formatted("Asha", 3)` | `"Asha has 3"` |
+| `String.join` | `String.join("/", "a", "b")` | `"a/b"` |
+
+### Example 1: a receipt builder
+Create `examples/ReceiptPrinter.java`:
+```java
+package com.meindev.examples;
+
+import java.util.List;
+
+public class ReceiptPrinter {
+
+    record Line(String item, int qty, long pricePaise) { }
+
+    static String print(String customer, List<Line> lines) {
+        var sb = new StringBuilder();
+        sb.append("Customer: ").append(customer).append('\n');
+        sb.append("-".repeat(30)).append('\n');
+
+        long total = 0;
+        for (var line : lines) {
+            long lineTotal = line.qty() * line.pricePaise();
+            total += lineTotal;
+            sb.append("%-15s x%-3d %8.2f%n".formatted(line.item(), line.qty(), lineTotal / 100.0));
+        }
+
+        sb.append("-".repeat(30)).append('\n');
+        sb.append("%-20s %8.2f%n".formatted("TOTAL", total / 100.0));
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        System.out.print(print("Asha", List.of(
+                new Line("Coffee", 2, 15_000),
+                new Line("Sandwich", 1, 22_050))));
+    }
+}
+```
+> `%-15s` means "string, left-aligned, 15 characters wide". `%8.2f` means "number, 8 characters wide, 2 decimals". `%n` is a newline.
+> (`/ 100.0` is acceptable here because it's only for **display**. Never do arithmetic with money in `double`.)
+
+---
+
+## 4. BigDecimal: the industry standard for money
+
+### Why not `double`?
+```java
+System.out.println(0.1 + 0.2);            // 0.30000000000000004
+System.out.println(1.10 - 1.00);          // 0.10000000000000009
+```
+`double` stores numbers in **binary**, and most decimal fractions (like 0.1) can't be stored exactly.
+For a bank, "almost correct" means **wrong**. That's why every payment system uses `BigDecimal` (or `long` paise, like you did in Lesson 1).
+
+### The 5 BigDecimal rules
+```java
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+// Rule 1: create from a STRING (or valueOf), NEVER with new BigDecimal(double)
+new BigDecimal(0.1);           // 0.1000000000000000055511151231257827021181583404541015625 ❌
+new BigDecimal("0.1");         // 0.1 ✅
+BigDecimal.valueOf(0.1);       // 0.1 ✅
+
+// Rule 2: it's IMMUTABLE. add() returns a NEW object (just like String.toUpperCase)
+BigDecimal price = new BigDecimal("100.00");
+price.add(new BigDecimal("5"));                     // ❌ result thrown away
+price = price.add(new BigDecimal("5"));             // ✅ 105.00
+
+// Rule 3: compare with compareTo(), NOT equals()
+new BigDecimal("2.0").equals(new BigDecimal("2.00"));          // false! equals also checks the SCALE
+new BigDecimal("2.0").compareTo(new BigDecimal("2.00")) == 0;  // true ✅
+
+// Rule 4: divide() needs a scale and a rounding mode
+new BigDecimal("10").divide(new BigDecimal("3"));                        // ArithmeticException! 3.333... never ends
+new BigDecimal("10").divide(new BigDecimal("3"), 2, RoundingMode.HALF_UP); // 3.33 ✅
+
+// Rule 5: set the scale (number of decimals) explicitly for money
+new BigDecimal("12.345").setScale(2, RoundingMode.HALF_UP);   // 12.35
+```
+**Scale** = the number of digits after the decimal point. `"2.00"` has scale 2.
+**HALF_UP** = normal school rounding (0.5 rounds up). **HALF_EVEN** ("banker's rounding") is used in some finance systems to avoid bias.
+
+### Example 2: GST calculation
+Create `examples/GstCalculator.java`:
+```java
+package com.meindev.examples;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+public final class GstCalculator {
+
+    private static final BigDecimal GST_RATE = new BigDecimal("0.18");   // 18%
+    private static final int PAISE_SCALE = 2;
+
+    private GstCalculator() { }    // utility class: no instances
+
+    public static BigDecimal gstOn(BigDecimal netAmount) {
+        return netAmount.multiply(GST_RATE).setScale(PAISE_SCALE, RoundingMode.HALF_UP);
+    }
+
+    public static BigDecimal grossOf(BigDecimal netAmount) {
+        return netAmount.add(gstOn(netAmount));
+    }
+
+    public static void main(String[] args) {
+        var net = new BigDecimal("999.99");
+        System.out.println(gstOn(net));     // 180.00  (179.9982 rounded)
+        System.out.println(grossOf(net));   // 1179.99
+    }
+}
+```
+
+---
+
+## 5. Common mistakes
+| Mistake | Fix |
+|---|---|
+| `if (status == "ACTIVE")` | `"ACTIVE".equals(status)` (puts the literal first, so it's also null-safe) |
+| `+=` on a String in a loop | `StringBuilder` or `String.join` |
+| `new BigDecimal(0.1)` | `new BigDecimal("0.1")` |
+| `bd1.equals(bd2)` for amounts | `bd1.compareTo(bd2) == 0` |
+| `amount.add(x);` and ignoring the result | `amount = amount.add(x);` |
+| `var list = new ArrayList<>();` | `var list = new ArrayList<String>();` or `List<String> list = new ArrayList<>();` |
+| `double` for money | `BigDecimal` with an explicit scale and rounding |
+
+## 6. Quick check questions (answer in chat)
+1. Why does `new BigDecimal("2.0").equals(new BigDecimal("2.00"))` return `false`? What should you use instead?
+2. Why is `+=` on a String inside a loop slow, while `"Hi " + name` on one line is fine?
+3. Give one example where `var` makes code **harder** to read.
+
+Then do **Lesson 3** in [EXERCISES.md](EXERCISES.md). After that comes the **graded weekly task**.
