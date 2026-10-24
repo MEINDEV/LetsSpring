@@ -11,7 +11,7 @@ public class NotificationTest {
     }
 
     @Test
-    public void sendPushNotitication(){
+    public void sendPushNotification(){
         String deviceId = "dev-1";
         String title = "Sale!";
 
