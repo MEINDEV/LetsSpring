@@ -4,8 +4,8 @@
 |---|---|---|
 | 1 | Immutability, `equals`/`hashCode`, records | ✅ done |
 | 2 | Enums, switch expressions, pattern matching | ✅ done |
-| **3** | **`var`, text blocks, String vs StringBuilder, BigDecimal for money** | ← you are here |
-| Task | Immutable `IndianRupee` and `BankAccount` (graded) | after lesson 3 |
+| 3 | `var`, text blocks, String vs StringBuilder, BigDecimal for money | ✅ done |
+| **Task** | **Immutable `IndianRupee` and `BankAccount` (graded)** | ← you are here: [TASK.md](TASK.md) |
 
 Project: `weeks/week-01-modern-java` (the `pom.xml` is ready, with JUnit 5 + **AssertJ**).
 Type the examples into `src/main/java/com/meindev/examples/`.

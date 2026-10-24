@@ -1,7 +1,7 @@
 # Learning Progress
 
 **Started:** 2026-10-07  **Target end:** 2027-04-07
-**Current:** Week 1, Modern Java  **Next step:** Learner: (1) cleanup still pending from L1: Temperature `<=` boundary + boundary test (asked twice!), EmployeeTest arg order; L2 fixes (mislabeled TicketStatus test, missing RESOLVED→IN_PROGRESS test). (2) Lesson 3 (LESSON.md §Lesson 3) + E3.1–E3.4 + 3 check Qs. Then: write TASK.md (graded: IndianRupee + BankAccount, BigDecimal-based).
+**Current:** Week 1, Modern Java  **Next step:** Learner: (1) quick fixes (TagFormatter ignores mode; BillSplitter remainder >1 paisa + negative total; TicketStatus test; Temperature boundary test; Notification `when` guard). (2) GRADED TASK weeks/week-01-modern-java/TASK.md (40 provided tests in src/test/java/com/meindev/task/*ProvidedTest). On "task done": run mvn test, check hidden edge cases, grade with rubric, ask 2 design Qs (e.g. why IndianRupee normalizes scale to 2; why BankAccount isn't a record / how transfer stays atomic). Reference solution: scratchpad ref/ (session-only; rebuild if lost).
 
 ## Phase status
 | Phase | Weeks | Status | Checkpoint score |
@@ -15,7 +15,7 @@
 | Week | Topic | Lessons done | Task score | Date completed | Notes |
 |---|---|---|---|---|---|
 | 0 | Setup | 1/1 | ungraded (would be ~80) | 2026-10-08 | 3/3 check Qs. 4 tests pass. greetAll via streams. Feedback: duplicated greet logic, no empty-list test, `;;`, test naming. |
-| 1 | Modern Java | 2/3 (L3 in progress) | – | – | Learner renamed task Money → IndianRupee (accepted). L1 exercises: 1st try ~65, after fixes ~78. L1 check Qs: 2/3 (Q3 compact ctor ❌). L2 exercises ~82: all correct, 31 tests, 0 warnings. L2 check Qs: Q1 ✅, Q2 ❌ (answered business rule, not compile error), Q3 ✅; E2.4 ✅. |
+| 1 | Modern Java | 3/3 (graded task in progress) | – | – | L3 exercises ~70: 42 tests pass but TagFormatter ignores mode (untested), BillSplitter wrong for remainder >1 paisa. L3 check Qs: Q1 ½ (said equals checks reference; really value+scale), Q2 ✅, Q3 ✅. | Learner renamed task Money → IndianRupee (accepted). L1 exercises: 1st try ~65, after fixes ~78. L1 check Qs: 2/3 (Q3 compact ctor ❌). L2 exercises ~82: all correct, 31 tests, 0 warnings. L2 check Qs: Q1 ✅, Q2 ❌ (answered business rule, not compile error), Q3 ✅; E2.4 ✅. |
 
 ## Weak areas (revisit in warm-ups)
 - Reading the full task requirements before submitting (Week 0: skipped greetAll)
@@ -33,6 +33,9 @@
 - JUnit assertEquals order is (expected, actual), opposite of AssertJ's assertThat(actual)
 - Commit messages still inconsistent ("docst(week-01) :", "Fix  minor issues...")
 - Exhaustive-switch idea: connect "new enum constant" → "compile error" (L2 Q2)
+- PATTERN (3rd time): tests only cover the happy path, so bugs hide in untested branches (TagFormatter AS_IS, BillSplitter 7 people, Team in L1). Push "test every branch / parameter value"
+- Commit content ≠ commit message (43e85f5 claims TicketStatus/Notification changes that aren't in it). Teach `git diff --staged` before commit
+- BigDecimal.equals = value AND scale (not reference)
 - Raw types (`List` without `<String>`)
 - AssertJ argument order: assertThat(actual).isEqualTo(expected)
 - Skipping parts of the spec (missing tests: boundary, valid value, fahrenheit(); 3 lesson check Qs unanswered)
@@ -57,3 +60,4 @@
 - 2026-10-17: L1 exercises reviewed (commit ea88f0e). 6/6 tests pass. Good: Employee→record, withMember returns new Team, AssertJ usage, E1.4 correct (prints "java"). Fixes requested: Team compact constructor/copy/validation, Temperature static factory + compact ctor + spelling celsius, missing tests, raw types, EqualsOnlyBug missing package + hashCode step, check Qs.
 - 2026-10-17: L1 fixes reviewed (commit 946c132). 8/8 tests pass. Fixed well: Team copy + validation + red-green test for original-list mutation, static ofFahrenheit, isCloseTo, EqualsOnlyBug package+hashCode, pom cleanup. Remaining: Temperature `<=` boundary regression, raw types (unchecked warnings), EmployeeTest arg order. Generated Lesson 2 (enums, switch expressions, pattern matching, sealed preview) + E2.1–E2.4; examples verified.
 - 2026-10-22: L2 exercises reviewed (commit 36de371). 31/31 tests, no warnings. Raw types fixed. Temperature `<=` NOT fixed. Generated Lesson 3 (var, text blocks, String ==/StringBuilder, BigDecimal, GST example) + E3.1–E3.4; all lesson claims verified by running code.
+- 2026-10-24: L3 exercises reviewed (commit 8ab4264). 42/42 tests pass. Good: BigDecimal learning tests w/ isEqualByComparingTo + .as(), text block email exact, SoftAssertions. Bugs found by probing: TagFormatter always UPPER; split(100,7) → [14.32, 14.28×6] (should be [14.29×4, 14.28×3]), negative total accepted. Follow-ups: Temperature `<` fixed ✅ (no boundary test), EmployeeTest fixed ✅, TicketStatus test + Notification NOT changed despite commit msg. Created graded TASK.md + skeletons (IndianRupee, AccountType, AccountStatus, BankAccount) + provided types + 40 provided tests (verified green vs reference solution, red vs skeleton).
