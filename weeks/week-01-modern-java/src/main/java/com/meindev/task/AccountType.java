@@ -8,15 +8,23 @@ import java.math.BigDecimal;
  * Skeleton: add fields + a constructor so each constant carries its own values.
  */
 public enum AccountType {
-    SAVINGS,
-    CURRENT;
+    SAVINGS(IndianRupee.of(1_000),IndianRupee.of(4)),
+    CURRENT(IndianRupee.ZERO,IndianRupee.ZERO);
+
+    private final IndianRupee minimumBalance;
+    private final IndianRupee annualInterest;
+
+    AccountType(IndianRupee minimumBalance, IndianRupee annualInterest){
+        this.minimumBalance = minimumBalance;
+        this.annualInterest = annualInterest;
+    }
 
     public IndianRupee minimumBalance() {
-        throw new UnsupportedOperationException("TODO");
+        return this.minimumBalance;
     }
 
     /** For example, 4 for 4% per year. */
-    public BigDecimal annualInterestPercent() {
-        throw new UnsupportedOperationException("TODO");
+    public IndianRupee annualInterestPercent() {
+        return this.annualInterest;
     }
 }

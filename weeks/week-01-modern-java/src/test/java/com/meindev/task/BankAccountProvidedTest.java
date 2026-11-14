@@ -29,9 +29,9 @@ class BankAccountProvidedTest {
         @Test
         void savingsAndCurrentRules() {
             assertThat(AccountType.SAVINGS.minimumBalance()).isEqualTo(rs("1000"));
-            assertThat(AccountType.SAVINGS.annualInterestPercent()).isEqualByComparingTo("4");
+            assertThat(AccountType.SAVINGS.annualInterestPercent()).isEqualByComparingTo(rs("4"));
             assertThat(AccountType.CURRENT.minimumBalance()).isEqualTo(IndianRupee.ZERO);
-            assertThat(AccountType.CURRENT.annualInterestPercent()).isEqualByComparingTo("0");
+            assertThat(AccountType.CURRENT.annualInterestPercent()).isEqualByComparingTo(rs("0"));
         }
     }
 
